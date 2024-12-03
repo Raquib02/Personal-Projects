@@ -1,7 +1,5 @@
-# CSCI 355
 # Summer 2024
-# Raqib Chowdhury
-# Assignment 4 - Data Scraping, Storage, and Visualization
+# Data Scraping, Storage, and Visualization
 
 
 import requests
