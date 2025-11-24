@@ -1,1 +1,1 @@
-
+<b> Created a simple webscraper to view information related to COVID infection rates and deaths in various countries across the globe. The information that was scraped can be viewed in the webscraper.txt file in a nice table format. </b> 
