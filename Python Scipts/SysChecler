@@ -1,0 +1,64 @@
+import os
+import psutil
+import subprocess
+from datetime import datetime
+
+PRINTER_NAME = "HP_LaserJet_Pro"
+SERVER_IP = "192.168.1.10"
+
+def system_health_check():
+    cpu_usage = psutil.cpu_percent(interval=2)
+    mem = psutil.virtual_memory()
+    disk = psutil.disk_usage("/")
+    return {
+        "cpu_usage": cpu_usage,
+        "memory_usage": mem.percent,
+        "disk_usage": disk.percent,
+        "network_up": is_server_reachable(SERVER_IP)
+    }
+
+def is_server_reachable(ip):
+    try:
+        subprocess.check_output(["ping", "-c", "1", ip], stderr=subprocess.STDOUT)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def check_printer_status(printer_name):
+    try:
+        output = subprocess.check_output(["lpstat", "-p", printer_name]).decode()
+        if "idle" in output.lower():
+            return "Online / Idle"
+        if "printing" in output.lower():
+            return "Online / Printing"
+        return "Unknown Status"
+    except:
+        return "Printer not found or offline"
+
+def alert(message):
+    print(f"[ALERT] {datetime.now()} — {message}")
+
+def run_automation():
+    health = system_health_check()
+    printer_status = check_printer_status(PRINTER_NAME)
+
+    print("System Health:")
+    print("CPU:", health["cpu_usage"])
+    print("Memory:", health["memory_usage"])
+    print("Disk:", health["disk_usage"])
+    print("Server Reachable:", health["network_up"])
+    print("Printer Status:", printer_status)
+
+    if health["cpu_usage"] > 85:
+        alert("High CPU usage detected.")
+    if health["memory_usage"] > 90:
+        alert("High memory usage detected.")
+    if health["disk_usage"] > 90:
+        alert("Low disk space available.")
+    if not health["network_up"]:
+        alert(f"Server {SERVER_IP} is unreachable.")
+    if "offline" in printer_status.lower() or "not found" in printer_status.lower():
+        alert(f"Printer '{PRINTER_NAME}' is offline or unavailable.")
+
+if __name__ == "__main__":
+    run_automation()
